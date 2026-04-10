@@ -1,0 +1,27 @@
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.67.0
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - jaeger
+    environment:
+      PORT: "8080"
+      DATABASE_URL: "file:/data/pismo.db?_pragma=foreign_keys(1)"
+      OTEL_SERVICE_NAME: "pismo-api"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318"
+      OTEL_EXPORTER_OTLP_INSECURE: "true"
+    ports:
+      - "8080:8080"
+    volumes:
+      - pismo_data:/data
+
+volumes:
+  pismo_data:

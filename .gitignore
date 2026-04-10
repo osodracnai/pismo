@@ -1,0 +1,26 @@
+# Binaries
+/pismo-api
+
+# Databases
+*.db
+*.db-shm
+*.db-wal
+
+# Coverage
+*.out
+coverage.out
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Environment
+.env
+.env.*
+.openclaude-profile.json
