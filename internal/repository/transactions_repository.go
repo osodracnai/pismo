@@ -7,5 +7,5 @@ import (
 )
 
 type TransactionsRepository interface {
-	Create(ctx context.Context, transaction domain.Transaction) (domain.Transaction, error)
+	Apply(ctx context.Context, transaction domain.Transaction) (domain.Transaction, error)
 }

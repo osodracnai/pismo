@@ -9,4 +9,5 @@ var (
 	ErrAccountNotFound       = errors.New("account not found")
 	ErrInvalidOperationType  = errors.New("invalid operation_type_id")
 	ErrInvalidAmount         = errors.New("amount must be greater than zero")
+	ErrInsufficientFunds     = errors.New("insufficient funds")
 )

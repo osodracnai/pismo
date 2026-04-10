@@ -20,7 +20,9 @@ CREATE TABLE IF NOT EXISTS transactions (
     amount REAL NOT NULL,
     event_date TEXT NOT NULL,
     FOREIGN KEY (account_id) REFERENCES accounts(id)
-);`
+);
+
+CREATE INDEX IF NOT EXISTS idx_transactions_account_id ON transactions(account_id);`
 
 func Open(databaseURL string) (*sql.DB, error) {
 	db, err := sql.Open("sqlite", databaseURL)

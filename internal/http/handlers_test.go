@@ -73,6 +73,21 @@ func TestCreateTransactionRejectsMissingAccount(t *testing.T) {
 	}
 }
 
+func TestCreateTransactionRejectsInsufficientFunds(t *testing.T) {
+	router := newTestRouter(t)
+
+	router.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/accounts", bytes.NewBufferString(`{"document_number":"12345678900"}`)))
+	router.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/transactions", bytes.NewBufferString(`{"account_id":1,"operation_type_id":4,"amount":100}`)))
+
+	transactionRequest := httptest.NewRequest(http.MethodPost, "/transactions", bytes.NewBufferString(`{"account_id":1,"operation_type_id":1,"amount":150}`))
+	transactionRecorder := httptest.NewRecorder()
+	router.ServeHTTP(transactionRecorder, transactionRequest)
+
+	if transactionRecorder.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("expected status %d, got %d", http.StatusUnprocessableEntity, transactionRecorder.Code)
+	}
+}
+
 func TestOpenAPIRouteReturnsSpec(t *testing.T) {
 	router := newTestRouter(t)
 

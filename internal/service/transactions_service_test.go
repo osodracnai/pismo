@@ -10,12 +10,20 @@ import (
 
 type transactionsRepoStub struct {
 	created domain.Transaction
+	err     error
 }
 
-func (s *transactionsRepoStub) Create(_ context.Context, transaction domain.Transaction) (domain.Transaction, error) {
+func (s *transactionsRepoStub) Apply(_ context.Context, transaction domain.Transaction) (domain.Transaction, error) {
+	if s.err != nil {
+		return domain.Transaction{}, s.err
+	}
 	s.created = transaction
 	transaction.ID = 1
 	return transaction, nil
+}
+
+func (s *transactionsRepoStub) Create(ctx context.Context, transaction domain.Transaction) (domain.Transaction, error) {
+	return s.Apply(ctx, transaction)
 }
 
 func TestTransactionsServiceCreateNormalizesSigns(t *testing.T) {
@@ -61,11 +69,22 @@ func TestTransactionsServiceCreateRejectsInvalidOperationType(t *testing.T) {
 }
 
 func TestTransactionsServiceCreateRejectsMissingAccount(t *testing.T) {
-	transactionsRepo := &transactionsRepoStub{}
+	transactionsRepo := &transactionsRepoStub{err: ErrAccountNotFound}
 	service := NewTransactionsService(accountsRepoStub{}, transactionsRepo)
 
 	_, err := service.Create(context.Background(), 1, domain.OperationTypePayment, 10)
 	if err != ErrAccountNotFound {
 		t.Fatalf("expected ErrAccountNotFound, got %v", err)
+	}
+}
+
+func TestTransactionsServiceCreateRejectsInsufficientFunds(t *testing.T) {
+	accountsRepo := accountsRepoStub{account: domain.Account{ID: 1, DocumentNumber: "123"}}
+	transactionsRepo := &transactionsRepoStub{err: ErrInsufficientFunds}
+	service := NewTransactionsService(accountsRepo, transactionsRepo)
+
+	_, err := service.Create(context.Background(), 1, domain.OperationTypePurchase, 10)
+	if err != ErrInsufficientFunds {
+		t.Fatalf("expected ErrInsufficientFunds, got %v", err)
 	}
 }

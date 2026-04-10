@@ -46,11 +46,6 @@ func (s TransactionsService) Create(ctx context.Context, accountID, operationTyp
 		return domain.Transaction{}, ErrInvalidAmount
 	}
 
-	if _, err := s.accountsRepo.GetByID(ctx, accountID); err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		return domain.Transaction{}, err
-	}
-
 	transaction := domain.Transaction{
 		AccountID:       accountID,
 		OperationTypeID: operationTypeID,
@@ -59,7 +54,7 @@ func (s TransactionsService) Create(ctx context.Context, accountID, operationTyp
 	}
 	span.SetAttributes(attribute.Float64("app.transaction.amount", transaction.Amount))
 
-	createdTransaction, err := s.transactionsRepo.Create(ctx, transaction)
+	createdTransaction, err := s.transactionsRepo.Apply(ctx, transaction)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
 		return domain.Transaction{}, err

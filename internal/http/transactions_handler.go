@@ -33,6 +33,7 @@ func NewTransactionsHandler(service service.TransactionsService) TransactionsHan
 // @Success 201 {object} domain.Transaction
 // @Failure 400 {object} errorResponse
 // @Failure 404 {object} errorResponse
+// @Failure 422 {object} errorResponse
 // @Router /transactions [post]
 func (h TransactionsHandler) Create(w http.ResponseWriter, r *http.Request) {
 	span := trace.SpanFromContext(r.Context())
@@ -57,6 +58,8 @@ func (h TransactionsHandler) Create(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusBadRequest, err.Error())
 		case errors.Is(err, service.ErrAccountNotFound):
 			writeError(w, http.StatusNotFound, err.Error())
+		case errors.Is(err, service.ErrInsufficientFunds):
+			writeError(w, http.StatusUnprocessableEntity, err.Error())
 		default:
 			writeError(w, http.StatusInternalServerError, "internal server error")
 		}

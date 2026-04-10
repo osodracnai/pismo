@@ -11,3 +11,5 @@ CREATE TABLE IF NOT EXISTS transactions (
     event_date TEXT NOT NULL,
     FOREIGN KEY (account_id) REFERENCES accounts(id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_transactions_account_id ON transactions(account_id);
